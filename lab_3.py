@@ -49,8 +49,9 @@ def draw_lines():
     """
         Преобразование Хафа— это метод для поиска линий, кругов и других простых форм на изображении.
     """
-    image = fetch_image(
-        url='https://source.unsplash.com/random/400x800?lines')
+    url = "https://images.unsplash.com/photo-1487653557405-97ba52327f93?crop=entropy&cs=tinysrgb&fit=crop&fm=jpg&h=800&ixid=eyJhcHBfaWQiOjF9&ixlib=rb-1.2.1&q=80&w=400"
+
+    image = fetch_image(url=url)
 
     gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
     edges = cv2.Canny(gray, 50, 150, apertureSize=3)
@@ -73,26 +74,26 @@ def draw_lines():
 
 def draw_circle():
 
-    image = fetch_image(
-        url='https://upload.wikimedia.org/wikipedia/commons/thumb/3/32/OpenCV_Logo_with_text_svg_version.svg/831px-OpenCV_Logo_with_text_svg_version.svg.png')
+    url = "https://i.pinimg.com/originals/d5/14/77/d5147798dc96186eb172a41ffbbeab78.jpg"
+
+    image = fetch_image(url=url)
 
     image_copy = image.copy()
 
-    image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-
     # Заблюрим лишние детали
-    image = cv2.GaussianBlur(image, (21, 21), cv2.BORDER_DEFAULT)
+    image = cv2.medianBlur(image, 7)
+    image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
     # Резульатом будует массив массивов вида
     # [[x y raduis-lenght], где x, y - координтаты центра
-
     circles = cv2.HoughCircles(image, cv2.HOUGH_GRADIENT, 1, 20,
                                param1=50, param2=30, minRadius=0, maxRadius=0)
-    # Округлим
+
+    # Округлим значения
     circles = np.uint16(np.around(circles))
+
     for i in circles[0, :]:
         cv2.circle(image_copy, (i[0], i[1]), i[2], (0, 0, 255), 2)
-        cv2.circle(image_copy, (i[0], i[1]), 2, (0, 0, 255), 3)
 
     cv2.imshow('@draw_circle / result', image_copy)
 
