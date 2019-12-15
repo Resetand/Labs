@@ -1,5 +1,6 @@
 import cv2
 import os
+from clear_screen import clear
 
 
 class bcolors:
@@ -21,13 +22,6 @@ class bcolors:
 # которые можно найти на официальной странице OpenCV на GitHub.
 
 
-dir_path = os.path.dirname(__file__)
-
-face_dacase = cv2.CascadeClassifier(f'{dir_path}/faces.xml')
-eyes_dacase = cv2.CascadeClassifier(f'{dir_path}/eyes.xml')
-body_dacase = cv2.CascadeClassifier(f'{dir_path}/bodies.xml')
-
-
 class Recognition:
 
     def __init__(self):
@@ -35,12 +29,19 @@ class Recognition:
         self.eyes = 0
         self.bodies = 0
 
+        dir_path = os.path.dirname(__file__)
+
+        self.face_dacase = cv2.CascadeClassifier(f'{dir_path}/faces.xml')
+        self.eyes_dacase = cv2.CascadeClassifier(f'{dir_path}/eyes.xml')
+        self.body_dacase = cv2.CascadeClassifier(f'{dir_path}/bodies.xml')
+
     def logger(self):
-        print(f"{bcolors.OKGREEN} Number of:  faces = {self.faces} {bcolors.OKBLUE} | eyes = {self.eyes}  {bcolors.HEADER} | humans = {self.bodies} {bcolors.ENDC} ")
+        clear()
+        print(f"\n\n\nStatistic:  {bcolors.OKGREEN} faces = {self.faces} {bcolors.OKBLUE} \t\t | \t\t eyes = {self.eyes}  {bcolors.HEADER} \t\t|\t\t humans = {self.bodies} {bcolors.ENDC} ")
 
     def bodyDetect(self, img):
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        bodies = body_dacase.detectMultiScale(gray, 1.3, 5)
+        bodies = self.body_dacase.detectMultiScale(gray, 1.3, 5)
 
         for (x, y, w, h) in bodies:
             cv2.rectangle(
@@ -63,7 +64,7 @@ class Recognition:
             gray_area = gray[fy:fy+fh, fx:fx+fw]
             color_area = img[fy:fy+fh, fx:fx+fw]
 
-            eyes = eyes_dacase.detectMultiScale(gray_area)
+            eyes = self.eyes_dacase.detectMultiScale(gray_area)
             eyes_global += [eyes]
             eyes_count += len(eyes)
             for (x, y, w, h) in eyes:
@@ -81,7 +82,7 @@ class Recognition:
 
     def faceDetect(self, img):
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        faces = face_dacase.detectMultiScale(gray, 1.3, 5)
+        faces = self.face_dacase.detectMultiScale(gray, 1.3, 5)
 
         for (x, y, w, h) in faces:
             cv2.rectangle(
@@ -113,5 +114,4 @@ class Recognition:
         cap.release()
 
 
-SERVICE = Recognition()
-SERVICE.startCaptureWebcam()
+Recognition().startCaptureWebcam()
