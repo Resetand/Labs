@@ -1,0 +1,9 @@
+{
+    "python.linting.pylintEnabled": true,
+    "cSpell.ignoreWords": [
+        "asarray",
+        "dtype",
+        "uint"
+    ],
+    "cSpell.enabled": false
+}
