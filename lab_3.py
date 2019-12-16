@@ -3,54 +3,21 @@ import numpy as np
 import matplotlib.pyplot as plt
 import argparse
 from lib.utils import Utils
+from lib.helpers import ImageURL
 
 
 class ShapsesBasic:
-    """
-        Лабораторная работа 3
-        Тема: Работа с контурами, выделение линий и кругов
 
-        •	Подсчитайте контуры на изображении используя функцию поиска контуров
-            cvFindContours(). За исходное изображение возьмите изображение
-            однотипных предметов на контрастном фоне (например, монетки, кубики и т.д.)
-
-        •	Найдите прямые линии на изображении при помощи преобразований Хофа,
-            функция cvHoughLines2(). В качестве исходного изображения лучше использовать
-            фотографию дородной разметки, дома, улицы.
-
-        •	Найдите окружности на изображении при помощи преобразований Хофа, функция cvHoughCircles().
-    """
-
-    def count_and_draw_contours(self):
-        """
-            Сначала ищем контрасное изображение на unsplash
-            Копируем его 
-            Дополнительно делаем холст с чб изображением и пропускаем 
-            его через threshold
-            ( Функция threshold возвращает изображение,
-            в котором все пиксели, которые темнее (меньше) 127
-            заменены на 0, а все, которые ярче (больше) 127, — на 255.
-            таким образом мы делаем фото еще более контрастным )
-
-            По этому контрасному холсту и считаем контуры 
-
-            Находим контуры как массив вот таких[х, y] координат
-
-            Добавляем инфу о кол-ве контуров прямо в img
-            И рисуем сразу все контуры (contourIdx = -1 говорит нарисовать все)
-        """
-
-        image = Utils.fetch_image(
-            url='https://source.unsplash.com/random/400x800?logo')
-
-        orig = image.copy()
-        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-
+    def get_contours(self, img):
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         _, thresh = cv2.threshold(src=gray, thresh=127, maxval=255, type=0)
-
-        contours, _ = cv2.findContours(
+        return cv2.findContours(
             image=thresh, mode=cv2.RETR_TREE, method=cv2.CHAIN_APPROX_NONE)
 
+    def contours_process(self):
+        image = Utils.fetch_image(url=ImageURL.RANDOM)
+        orig = image.copy()
+        contours = self.get_contours(image)
         cv2.putText(img=image,
                     text=f"contours: {str(len(contours))}", org=(10, 40),
                     fontScale=1, fontFace=cv2.FONT_HERSHEY_SIMPLEX,
@@ -59,21 +26,17 @@ class ShapsesBasic:
             image=image, contours=contours, contourIdx=-1, color=(0, 0, 255), thickness=3)
         return image, orig
 
-    def draw_lines(self):
-        """
-            Преобразование Хафа— это метод для поиска линий,
-            кругов и других простых форм на изображении
-        """
+    def get_hough_lines(self, img):
+        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+        edges = cv2.Canny(gray, 50, 150, apertureSize=3)
+        return cv2.HoughLines(edges, 1, np.pi/180, 200)
 
-        url = "https://images.unsplash.com/photo-1487653557405-97ba52327f93?crop=entropy&cs=tinysrgb&fit=crop&fm=jpg&h=800&ixid=eyJhcHBfaWQiOjF9&ixlib=rb-1.2.1&q=80&w=400"
+    def hough_lines_process(self):
 
-        image = Utils.fetch_image(url=url)
+        image = Utils.fetch_image(url=ImageURL.BUILDING)
         orig = image.copy()
 
-        gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
-        edges = cv2.Canny(gray, 50, 150, apertureSize=3)
-
-        lines = cv2.HoughLines(edges, 1, np.pi/180, 200)
+        lines = self.get_hough_lines()
 
         for rho, theta in lines[0]:
             a = np.cos(theta)
@@ -89,23 +52,19 @@ class ShapsesBasic:
 
         return image, orig
 
-    def draw_circle(self):
-        """
-            Преобразование Хафа— это метод для поиска линий,
-            кругов и других простых форм на изображении
-
-        """
-        url = "https://i.pinimg.com/originals/d5/14/77/d5147798dc96186eb172a41ffbbeab78.jpg"
-
-        image = Utils.fetch_image(url=url)
-        orig = image.copy()
-
+    def get_hough_circles(self, img):
         image = cv2.medianBlur(image, 7)
         image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
 
         circles = cv2.HoughCircles(image, cv2.HOUGH_GRADIENT, 1, 20,
                                    param1=50, param2=30, minRadius=0, maxRadius=0)
         circles = np.uint16(np.around(circles))
+        return circles
+
+    def hough_circles_process(self):
+        image = Utils.fetch_image(url=ImageURL.OPENCV_LOGO)
+        orig = image.copy()
+        circles = self.get_hough_circles(image)
 
         for [x, y, raduis] in circles[0, :]:
             cv2.circle(img=image,
@@ -129,13 +88,13 @@ def process():
     result = None
 
     if args.contours:
-        result, orig = shapsesBasic.count_and_draw_contours()
+        result, orig = shapsesBasic.contours_process()
 
     elif args.circle:
-        result, orig = shapsesBasic.draw_circle()
+        result, orig = shapsesBasic.hough_circles_process()
 
     elif args.lines:
-        result, orig = shapsesBasic.draw_lines()
+        result, orig = shapsesBasic.hough_lines_process()
 
     Utils.show_image_compare(orig, result)
     plt.waitforbuttonpress()

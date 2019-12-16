@@ -4,6 +4,10 @@ import os
 
 dir_path = os.path.dirname(__file__)
 
+# yolov3.weights file is required
+# to get them try to make
+# wget https://pjreddie.com/media/files/yolov3.weights
+# in data folder
 
 net = cv2.dnn.readNet(f"{dir_path}/data/yolov3.weights",
                       f"{dir_path}/data/yolov3.cfg")

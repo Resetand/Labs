@@ -1,24 +1,14 @@
 import cv2
 import argparse
 from lib.utils import Utils
+from lib.helpers import ImageURL
 from matplotlib import pyplot as plt
 
 
 class SpecificAreas:
-    """
-        Лабораторная работа №4
-        Тема: Определение характерных точек. Аффинные преобразования.
-
-        •	Выделить характерные угловые точки на произвольном изображении при
-            помощи детектора углов Харриса (cornerHarris()).
-
-        •	Выделить характерные угловые точки при помощи детектора углов Ши Томаси
-            (goodFeaturesToTrack ()).
-    """
 
     def draw_good_features_to_track(self):
-        img = Utils.fetch_image(
-            'https://source.unsplash.com/random/400x800?chess')
+        img = Utils.fetch_image(ImageURL.CHESS)
         orig = img.copy()
 
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
@@ -34,8 +24,7 @@ class SpecificAreas:
         return img, orig
 
     def draw_corner_harris(self):
-        img = Utils.fetch_image(
-            'https://source.unsplash.com/random/400x800?chess')
+        img = Utils.fetch_image(ImageURL.CHESS)
         orig = img.copy()
 
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
