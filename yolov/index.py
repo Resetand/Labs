@@ -1,8 +1,7 @@
 import cv2
 import numpy as np
 import os
-from clear_screen import clear
-import darknet as dn
+
 dir_path = os.path.dirname(__file__)
 
 
@@ -80,16 +79,3 @@ class DetectionService:
         cv2.putText(self.img, text, (x, y - 5), cv2.FONT_HERSHEY_SIMPLEX,
                     0.6, (0, 0, 0), 1)
         cv2.rectangle(self.img, (x, y), (x + w, y + h), (0, 255, 0), 2)
-
-
-cap = cv2.VideoCapture(0)
-while True:
-    _, img = cap.read()
-    img = DetectionService(img).draw_all()
-    cv2.imshow('ItemDetection', img)
-    k = cv2.waitKey(5) & 0xFF
-    if k == 27:
-        break
-
-cv2.destroyAllWindows()
-cap.release()

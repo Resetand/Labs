@@ -1,12 +1,11 @@
 import cv2
 import numpy as np
 import matplotlib.pyplot as plt
+import argparse
+from lib.utils import Utils
 
-from lib.opecv_utils import fetch_image
-from lib.utils import show_image_compare
 
-
-class Shapses:
+class ShapsesBasic:
     """
         Лабораторная работа 3
         Тема: Работа с контурами, выделение линий и кругов
@@ -21,18 +20,6 @@ class Shapses:
 
         •	Найдите окружности на изображении при помощи преобразований Хофа, функция cvHoughCircles().
     """
-
-    def bootstrap(self):
-        contours, orig_contours = self.count_and_draw_contours()
-        show_image_compare(orig_contours, contours, "contours")
-
-        lines, orig_lines = self.draw_lines()
-        show_image_compare(orig_lines, lines, "Hough lines")
-
-        circles, orig_circles = self.draw_circle()
-        show_image_compare(orig_circles, circles, "Hough circles")
-
-        plt.waitforbuttonpress()
 
     def count_and_draw_contours(self):
         """
@@ -53,7 +40,7 @@ class Shapses:
             И рисуем сразу все контуры (contourIdx = -1 говорит нарисовать все)
         """
 
-        image = fetch_image(
+        image = Utils.fetch_image(
             url='https://source.unsplash.com/random/400x800?logo')
 
         orig = image.copy()
@@ -80,7 +67,7 @@ class Shapses:
 
         url = "https://images.unsplash.com/photo-1487653557405-97ba52327f93?crop=entropy&cs=tinysrgb&fit=crop&fm=jpg&h=800&ixid=eyJhcHBfaWQiOjF9&ixlib=rb-1.2.1&q=80&w=400"
 
-        image = fetch_image(url=url)
+        image = Utils.fetch_image(url=url)
         orig = image.copy()
 
         gray = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
@@ -110,7 +97,7 @@ class Shapses:
         """
         url = "https://i.pinimg.com/originals/d5/14/77/d5147798dc96186eb172a41ffbbeab78.jpg"
 
-        image = fetch_image(url=url)
+        image = Utils.fetch_image(url=url)
         orig = image.copy()
 
         image = cv2.medianBlur(image, 7)
@@ -128,4 +115,30 @@ class Shapses:
         return image, orig
 
 
-Shapses().bootstrap()
+def process():
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('--contours', '-co', action='store_true')
+    parser.add_argument('--circle', '-ci', action='store_true')
+    parser.add_argument('--lines', '-l', action='store_true', default=True)
+
+    args = parser.parse_args()
+
+    shapsesBasic = ShapsesBasic()
+    orig = None
+    result = None
+
+    if args.contours:
+        result, orig = shapsesBasic.count_and_draw_contours()
+
+    elif args.circle:
+        result, orig = shapsesBasic.draw_circle()
+
+    elif args.lines:
+        result, orig = shapsesBasic.draw_lines()
+
+    Utils.show_image_compare(orig, result)
+    plt.waitforbuttonpress()
+
+
+process()

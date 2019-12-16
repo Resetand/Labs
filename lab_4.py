@@ -1,7 +1,7 @@
 import cv2
-
-from lib.opecv_utils import fetch_image
-from lib.utils import show_image_compare
+import argparse
+from lib.utils import Utils
+from matplotlib import pyplot as plt
 
 
 class SpecificAreas:
@@ -14,24 +14,10 @@ class SpecificAreas:
 
         •	Выделить характерные угловые точки при помощи детектора углов Ши Томаси
             (goodFeaturesToTrack ()).
-
-        •	Воспользуйтесь функцией аффинных преобразований getAffineTransform()
-            или функцией перспективных преобразований getPerspectiveTransform.()
-            для поворота изображения (например, для последующего распознавания). Для этого
-            задания в качестве исходного изображения необходимо использовать фото лежащего на
-            столе листа с текстом или книги, т.е. изначально изображение должно быть искажено.
     """
 
-    def bootstrap(self):
-        corner_harris, corner_harris_orig = self.draw_corner_harris()
-        show_image_compare(corner_harris_orig, corner_harris, 'Corner Harris')
-
-        good_features_to_track, good_features_to_track_orig = self.draw_good_features_to_track()
-        show_image_compare(good_features_to_track_orig,
-                           good_features_to_track, 'Corner Harris')
-
     def draw_good_features_to_track(self):
-        img = fetch_image(
+        img = Utils.fetch_image(
             'https://source.unsplash.com/random/400x800?chess')
         orig = img.copy()
 
@@ -48,7 +34,7 @@ class SpecificAreas:
         return img, orig
 
     def draw_corner_harris(self):
-        img = fetch_image(
+        img = Utils.fetch_image(
             'https://source.unsplash.com/random/400x800?chess')
         orig = img.copy()
 
@@ -60,4 +46,26 @@ class SpecificAreas:
         return img, orig
 
 
-SpecificAreas().bootstrap()
+def process():
+    parser = argparse.ArgumentParser()
+
+    parser.add_argument('--harris', '-ha', action='store_true', default=True)
+    parser.add_argument('--koseler', '-k', action='store_true')
+
+    args = parser.parse_args()
+
+    specificAreas = SpecificAreas()
+    orig = None
+    result = None
+
+    if args.koseler:
+        result, orig = specificAreas.draw_good_features_to_track()
+
+    elif args.harris:
+        result, orig = specificAreas.draw_corner_harris()
+
+    Utils.show_image_compare(orig, result)
+    plt.waitforbuttonpress()
+
+
+process()

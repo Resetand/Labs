@@ -13,6 +13,7 @@ class bcolors:
     BOLD = '\033[1m'
     UNDERLINE = '\033[4m'
 
+
 # Лабораторная работа 5
 # Тема: Использование каскада Хаара для классификации изображений
 # Задание:
@@ -21,31 +22,33 @@ class bcolors:
 # Для работы понадобятся готовые обученные классификаторы XML,
 # которые можно найти на официальной странице OpenCV на GitHub.
 
+dir_path = os.path.dirname(__file__)
+
+FACE_DACASE = cv2.CascadeClassifier(f'{dir_path}/faces.xml')
+EYES_DACASE = cv2.CascadeClassifier(f'{dir_path}/eyes.xml')
+BODY_DACASE = cv2.CascadeClassifier(f'{dir_path}/bodies.xml')
+
 
 class Recognition:
 
-    def __init__(self):
+    def __init__(self, img):
+        self.img = img
         self.faces = 0
         self.eyes = 0
         self.bodies = 0
-
-        dir_path = os.path.dirname(__file__)
-
-        self.face_dacase = cv2.CascadeClassifier(f'{dir_path}/faces.xml')
-        self.eyes_dacase = cv2.CascadeClassifier(f'{dir_path}/eyes.xml')
-        self.body_dacase = cv2.CascadeClassifier(f'{dir_path}/bodies.xml')
 
     def logger(self):
         clear()
         print(f"\n\n\nStatistic:  {bcolors.OKGREEN} faces = {self.faces} {bcolors.OKBLUE} \t\t | \t\t eyes = {self.eyes}  {bcolors.HEADER} \t\t|\t\t humans = {self.bodies} {bcolors.ENDC} ")
 
-    def bodyDetect(self, img):
-        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        bodies = self.body_dacase.detectMultiScale(gray, 1.3, 5)
+    def body_detect(self):
+
+        gray = cv2.cvtColor(self.img, cv2.COLOR_BGR2GRAY)
+        bodies = BODY_DACASE .detectMultiScale(gray, 1.3, 5)
 
         for (x, y, w, h) in bodies:
             cv2.rectangle(
-                img=img,
+                img=self.img,
                 pt1=(x, y),
                 pt2=(x+w, y+h),
                 color=(0, 0, 255),
@@ -55,16 +58,16 @@ class Recognition:
         self.bodies = len(bodies)
         return bodies
 
-    def eyesDetect(self, img, faces):
+    def eyes_detect(self, faces):
         eyes_count = 0
         eyes_global = []
         for (fx, fy, fw, fh) in faces:
-            gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
+            gray = cv2.cvtColor(self.img, cv2.COLOR_BGR2GRAY)
 
             gray_area = gray[fy:fy+fh, fx:fx+fw]
-            color_area = img[fy:fy+fh, fx:fx+fw]
+            color_area = self.img[fy:fy+fh, fx:fx+fw]
 
-            eyes = self.eyes_dacase.detectMultiScale(gray_area)
+            eyes = EYES_DACASE.detectMultiScale(gray_area)
             eyes_global += [eyes]
             eyes_count += len(eyes)
             for (x, y, w, h) in eyes:
@@ -80,13 +83,13 @@ class Recognition:
 
         return eyes_global
 
-    def faceDetect(self, img):
-        gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-        faces = self.face_dacase.detectMultiScale(gray, 1.3, 5)
+    def face_detect(self):
+        gray = cv2.cvtColor(self.img, cv2.COLOR_BGR2GRAY)
+        faces = FACE_DACASE.detectMultiScale(gray, 1.3, 5)
 
         for (x, y, w, h) in faces:
             cv2.rectangle(
-                img=img,
+                img=self.img,
                 pt1=(x, y),
                 pt2=(x+w, y+h),
                 color=(0, 0, 255),
@@ -95,23 +98,9 @@ class Recognition:
         self.faces = len(faces)
         return faces
 
-    def startCaptureWebcam(self):
-        cap = cv2.VideoCapture(0)
-        while True:
-            _, img = cap.read()
-
-            faces = self.faceDetect(img)
-            self.eyesDetect(img, faces)
-            self.bodyDetect(img)
-
-            self.logger()
-            cv2.imshow('recognition', img)
-            k = cv2.waitKey(5) & 0xFF
-            if k == 27:
-                break
-
-        cv2.destroyAllWindows()
-        cap.release()
-
-
-Recognition().startCaptureWebcam()
+    def detect_all(self):
+        faces = self.face_detect()
+        self.eyes_detect(faces)
+        self.body_detect()
+        self.logger()
+        return self.img

@@ -1,7 +1,9 @@
 import cv2
+import argparse
+from lib.utils import Utils
 
 
-class CaptureService:
+class ProcessingBasic:
     """
         Лабораторная работа №2
         Тема: «Вывод видео. Детектирование краев»
@@ -13,26 +15,10 @@ class CaptureService:
         •	детектор границ Кенни.
     """
 
-    def __init__(self):
-        self.img = None
+    def __init__(self, img):
+        self.img = img
 
-    def start_capture(self):
-        cap = cv2.VideoCapture(0)
-        while (True):
-            _, frame = cap.read()
-            self.img = frame
-
-            self.show_sobel()
-            self.show_canny()
-            self.show_laplacian()
-
-            pressed_key = cv2.waitKey(5) & 0xFF
-            if pressed_key == 27:
-                break
-        cv2.destroyAllWindows()
-        cap.release()
-
-    def show_sobel(self):
+    def sobel(self):
         """
             дискретный дифференциальный оператор, 
             вычисляющий приближение градиента яркости изображения.
@@ -51,10 +37,9 @@ class CaptureService:
         """
         sobelx = cv2.Sobel(self.img.copy(), cv2.CV_64F, 1, 0, ksize=5)
         sobely = cv2.Sobel(self.img.copy(), cv2.CV_64F, 0, 1, ksize=5)
-        cv2.imshow('sobelx', sobelx)
-        cv2.imshow('sobely', sobely)
+        return sobelx
 
-    def show_canny(self):
+    def canny(self):
         """
             Canny является методом выделения границ.
             Работает так
@@ -64,15 +49,35 @@ class CaptureService:
             — Связать края в контура (edge linking)
         """
         canny = cv2.Canny(self.img.copy(), 100, 200)
-        cv2.imshow('Canny', canny)
+        return canny
 
-    def show_laplacian(self):
+    def laplacian(self):
         """
             суммирование производных второго порядка
             фактически, это оператор собеля с dx = dy = 2
         """
         laplacian = cv2.Laplacian(self.img.copy(), cv2.CV_64F)
-        cv2.imshow('Laplacian', laplacian)
+        return laplacian
 
 
-CaptureService().start_capture()
+def process():
+    parser = argparse.ArgumentParser(description='Process webcam stream.')
+
+    parser.add_argument('--laplacian', '-l', action='store_true')
+    parser.add_argument('--sobel', '-s', action='store_true')
+    parser.add_argument('--canny', '-c', action='store_true', default=True)
+
+    args = parser.parse_args()
+
+    if args.laplacian:
+        Utils.capture_webcam(
+            lambda frame: ProcessingBasic(frame).laplacian(), 'laplacian')
+    elif args.sobel:
+        Utils.capture_webcam(
+            lambda frame: ProcessingBasic(frame).sobel(), 'sobel')
+    elif args.canny:
+        Utils.capture_webcam(
+            lambda frame: ProcessingBasic(frame).canny(), 'canny')
+
+
+process()
