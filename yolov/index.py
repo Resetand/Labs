@@ -51,7 +51,7 @@ class Detection:
         return (center_x, center_y, width, height)
 
 
-class DetectionService:
+class YolovService:
     def __init__(self, img):
         self.img = img.copy()
         self.blob = cv2.dnn.blobFromImage(
@@ -70,7 +70,7 @@ class DetectionService:
                     detections.append(detection)
         return detections
 
-    def draw_all(self):
+    def detect_process(self):
         for detection in self.detections:
             self.draw_detect(detection)
         return self.img

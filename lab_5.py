@@ -1,10 +1,11 @@
 
-from recognition.index import Recognition
+from recognition.index import RecognitionService
 from lib.utils import Utils
 
 
 def process():
-    Utils.capture_webcam((lambda frame: Recognition(frame).detect_all()))
+    Utils.capture_webcam(
+        (lambda frame: RecognitionService(frame).detect_process()))
 
 
 process()

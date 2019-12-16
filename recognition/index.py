@@ -29,7 +29,7 @@ EYES_DACASE = cv2.CascadeClassifier(f'{dir_path}/eyes.xml')
 BODY_DACASE = cv2.CascadeClassifier(f'{dir_path}/bodies.xml')
 
 
-class Recognition:
+class RecognitionService:
 
     def __init__(self, img):
         self.img = img
@@ -98,7 +98,7 @@ class Recognition:
         self.faces = len(faces)
         return faces
 
-    def detect_all(self):
+    def detect_process(self):
         faces = self.face_detect()
         self.eyes_detect(faces)
         self.body_detect()
