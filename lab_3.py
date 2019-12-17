@@ -1,29 +1,29 @@
 import cv2
 import numpy as np
-import matplotlib.pyplot as plt
 import argparse
 from lib.utils import Utils
 from lib.helpers import ImageURL
 
 
 class ShapsesBasic:
-
     def get_contours(self, img):
         gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
         _, thresh = cv2.threshold(src=gray, thresh=127, maxval=255, type=0)
         return cv2.findContours(
-            image=thresh, mode=cv2.RETR_TREE, method=cv2.CHAIN_APPROX_NONE)
+            image=thresh, mode=cv2.RETR_TREE, method=cv2.CHAIN_APPROX_NONE)[0]
 
     def contours_process(self):
         image = Utils.fetch_image(url=ImageURL.RANDOM)
         orig = image.copy()
         contours = self.get_contours(image)
-        cv2.putText(img=image,
-                    text=f"contours: {str(len(contours))}", org=(10, 40),
-                    fontScale=1, fontFace=cv2.FONT_HERSHEY_SIMPLEX,
-                    color=(0, 255, 0), lineType=1)
+
         cv2.drawContours(
             image=image, contours=contours, contourIdx=-1, color=(0, 0, 255), thickness=3)
+
+        cv2.putText(img=image,
+                    text=f"contours: {str(len(contours))}", org=(10, 40),
+                    fontScale=1.2, fontFace=cv2.FONT_HERSHEY_SIMPLEX,
+                    color=(0, 0, 0), thickness=2)
         return image, orig
 
     def get_hough_lines(self, img):
@@ -36,7 +36,7 @@ class ShapsesBasic:
         image = Utils.fetch_image(url=ImageURL.BUILDING)
         orig = image.copy()
 
-        lines = self.get_hough_lines()
+        lines = self.get_hough_lines(image)
 
         for rho, theta in lines[0]:
             a = np.cos(theta)
@@ -53,10 +53,10 @@ class ShapsesBasic:
         return image, orig
 
     def get_hough_circles(self, img):
-        image = cv2.medianBlur(image, 7)
-        image = cv2.cvtColor(image, cv2.COLOR_BGR2GRAY)
+        img = cv2.medianBlur(img, 7)
+        img = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
 
-        circles = cv2.HoughCircles(image, cv2.HOUGH_GRADIENT, 1, 20,
+        circles = cv2.HoughCircles(img, cv2.HOUGH_GRADIENT, 1, 20,
                                    param1=50, param2=30, minRadius=0, maxRadius=0)
         circles = np.uint16(np.around(circles))
         return circles
@@ -97,7 +97,6 @@ def process():
         result, orig = shapsesBasic.hough_lines_process()
 
     Utils.show_image_compare(orig, result)
-    plt.waitforbuttonpress()
 
 
 process()

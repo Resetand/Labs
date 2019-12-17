@@ -36,3 +36,4 @@ class Utils:
         figure.add_subplot(1, 2, 2)
         plt.imshow(result)
         plt.show(block=True)
+        plt.waitforbuttonpress()
