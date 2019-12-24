@@ -3,6 +3,7 @@ import argparse
 from lib.utils import Utils
 from lib.helpers import ImageURL
 from matplotlib import pyplot as plt
+import numpy as np
 
 
 class SpecificAreas:
@@ -34,12 +35,31 @@ class SpecificAreas:
         img[dts > 0.01 * dts.max()] = [0, 0, 255]
         return img, orig
 
+    def affin_rotate(self):
+        src = Utils.fetch_image(ImageURL.RANDOM)
+        orig = src.copy()
+        srcTri = np.array([[0, 0], [src.shape[1] - 1, 0],
+                           [0, src.shape[0] - 1]]).astype(np.float32)
+        dstTri = np.array([[0, src.shape[1]*0.33], [src.shape[1]*0.85, src.shape[0]
+                                                    * 0.25], [src.shape[1]*0.15, src.shape[0]*0.7]]).astype(np.float32)
+
+        warp_mat = cv2.getAffineTransform(srcTri, dstTri)
+        warp_dst = cv2.warpAffine(src, warp_mat, (src.shape[1], src.shape[0]))
+
+        center = (warp_dst.shape[1]//2, warp_dst.shape[0]//2)
+
+        angle = 90
+        scale = 1
+        rotated = cv2.getRotationMatrix2D(center, angle, scale)
+        return src, orig
+
 
 def process():
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--harris', '-ha', action='store_true', default=True)
     parser.add_argument('--koseler', '-k', action='store_true')
+    parser.add_argument('--affine', '-a', action='store_true')
 
     args = parser.parse_args()
 
@@ -47,7 +67,10 @@ def process():
     orig = None
     result = None
 
-    if args.koseler:
+    if args.affine:
+        result, orig = specificAreas.affin_rotate()
+
+    elif args.koseler:
         result, orig = specificAreas.draw_good_features_to_track()
 
     elif args.harris:
